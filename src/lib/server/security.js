@@ -1,8 +1,14 @@
 import { error } from '@sveltejs/kit';
 import { auth } from "$lib/server/auth";
 
+
+/**
+* Makes these functions available in 'locals' so we can use them in load() or other server functions
+*/
 export function securityHandler(event) {
-    const user = event.locals.user;
+    const session = event.locals.session;
+
+    console.log('sec handler: ', session)
 
     return {
         /**
@@ -20,9 +26,10 @@ export function securityHandler(event) {
          * Checks if user is an admin
          * @throws 403 error if user is not an admin
          */
+        // I DON'T KNOW IF THIS WORKS, UNTESTED (we don't need admin user so far)
         requireAdmin: () => {
             const authenticatedUser = requireAuth();
-            if (!user.isAdmin) {
+            if (!session.user.isAdmin) {
                 error(403, 'Forbidden: Admin access required');
             }
             return authenticatedUser;
