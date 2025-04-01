@@ -66,7 +66,7 @@
 					>Sign In</a
 				>
 				<a
-					href="/signup"
+					href="/register"
 					class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 					>Sign Up</a
 				>
@@ -103,7 +103,7 @@
 				</li>
 				<li>
 					<a
-						href="/signup"
+						href="/register"
 						class="block border-b border-gray-100 py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
 						>Sign Up</a
 					>
