@@ -8,8 +8,6 @@ import { auth } from "$lib/server/auth";
 export function securityHandler(event) {
     const session = event.locals.session;
 
-    console.log('sec handler: ', session)
-
     return {
         /**
          * Checks if the user is authenticated

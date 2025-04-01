@@ -4,7 +4,9 @@ import { securityHandler } from "$lib/server/security"
 
 export async function handle({ event, resolve }) {
 
-    console.log(event.locals)
+    const isProtectedRoute = event.url.pathname.startsWith('/protected') ||
+        event.url.pathname.startsWith('/admin') ||
+        event.url.pathname.startsWith('/account');
 
     try {
         const session = await auth.api.getSession({
@@ -13,10 +15,18 @@ export async function handle({ event, resolve }) {
 
         event.locals.session = session
 
-        console.log("Success")
-        console.log(session)
     } catch (error) {
         console.log(error)
+
+        if (isProtectedRoute) {
+            // Redirect to login or show an error
+            return new Response('Unauthorized', {
+                status: 401,
+                headers: {
+                    'Location': '/login'  // Optional redirect
+                }
+            });
+        }
     }
 
     // // adds the security functions to locals to make it accessible in other server side code
