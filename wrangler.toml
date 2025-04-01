@@ -5,3 +5,4 @@ compatibility_flags = [ "nodejs_compat_v2" ]
 
 [vars]
 PUBLIC_BETTER_AUTH_URL = "http://localhost:5173"
+NODE_VERSION = "22.14.0"
