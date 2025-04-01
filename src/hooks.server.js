@@ -15,13 +15,23 @@ export async function handle({ event, resolve }) {
 
         event.locals.session = session
 
+        if (isProtectedRoute && (!session || !session.user)) {
+            // Redirect to login
+            return new Response(null, {
+                status: 302,
+                headers: {
+                    'Location': '/login'
+                }
+            });
+        }
+
     } catch (error) {
         console.log(error)
 
         if (isProtectedRoute) {
             // Redirect to login or show an error
-            return new Response('Unauthorized', {
-                status: 401,
+            return new Response(null, {
+                status: 302,
                 headers: {
                     'Location': '/login'  // Optional redirect
                 }
