@@ -1,7 +1,9 @@
 import { betterAuth } from "better-auth";
 import pg from "pg"
 const { Pool } = pg;
-import { DATABASE_URL, BETTER_AUTH_SECRET } from '$env/static/private';
+
+const DATABASE_URL = import.meta.env.DATABASE_URL
+const BETTER_AUTH_SECRET = import.meta.env.BETTER_AUTH_SECRET
 
 export const auth = betterAuth({
     database: new Pool({
