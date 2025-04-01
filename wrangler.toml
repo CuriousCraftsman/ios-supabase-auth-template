@@ -12,3 +12,8 @@ NODE_VERSION = "22.14.0"
 
 [build]
 command = "npm run build"
+
+[observability.logs]
+enabled = true
+
+invocation_logs = false
