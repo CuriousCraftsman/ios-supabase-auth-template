@@ -4,5 +4,5 @@ compatibility_date = "2025-02-10"
 compatibility_flags = [ "nodejs_compat_v2" ]
 
 [vars]
-PUBLIC_BETTER_AUTH_URL = "http://localhost:5173"
+PUBLIC_BETTER_AUTH_URL = "https://better-auth-template.pages.dev"
 NODE_VERSION = "22.14.0"
