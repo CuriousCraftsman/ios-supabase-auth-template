@@ -20,7 +20,7 @@ export async function handle({ event, resolve }) {
             return new Response(null, {
                 status: 302,
                 headers: {
-                    'Location': '/login'
+                    'Location': '/sign-in'
                 }
             });
         }
@@ -33,7 +33,7 @@ export async function handle({ event, resolve }) {
             return new Response(null, {
                 status: 302,
                 headers: {
-                    'Location': '/login'  // Optional redirect
+                    'Location': '/sign-in'  // Optional redirect
                 }
             });
         }
