@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-cloudflare';
+import adapter from '@sveltejs/adapter-cloudflare-workers';
 
 const config = { kit: { adapter: adapter() } };
 
