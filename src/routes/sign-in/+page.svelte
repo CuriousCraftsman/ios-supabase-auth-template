@@ -27,7 +27,7 @@
 			{
 				email, // user email address
 				password, // user password -> min 8 characters by default
-				callbackURL: '/dashboard', // a url to redirect to after the user verifies their email (optional)
+				callbackURL: '/protected/dashboard', // a url to redirect to after the user verifies their email (optional)
 				rememberMe: true // TODO make this optional for the user
 			},
 			{

@@ -49,7 +49,7 @@
 			<ul class="flex flex-row space-x-8 text-sm font-medium">
 				<li>
 					<a
-						href="/dashboard"
+						href="protected/dashboard"
 						class="py-2 text-gray-700 hover:text-blue-700 dark:text-gray-400 dark:hover:text-white"
 						>Dashboard</a
 					>
@@ -89,7 +89,7 @@
 			<ul class="mt-4 flex flex-col space-y-2 font-medium">
 				<li>
 					<a
-						href="/dashboard"
+						href="protected/dashboard"
 						class="block border-b border-gray-100 py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
 						>Dashboard</a
 					>
