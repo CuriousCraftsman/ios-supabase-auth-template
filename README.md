@@ -7,6 +7,9 @@ This template is **not** designed for web use.
 
 Install dependencies with `npm install` (or `pnpm install` or `yarn`)
 
+## Note
+CMD + F "AuthMe" and "com.authme.test" and change those to your app name.
+
 ## Developing
 
 ### Mobile Development
