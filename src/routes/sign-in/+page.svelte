@@ -1,7 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { authClient } from '$lib/client/auth-client';
-	import { enhance } from '$app/forms';
+	import { auth } from '$lib/stores/auth.svelte.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -15,8 +14,10 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 
-	let email;
-	let password;
+	let email = $state('');
+	let password = $state('');
+	let loading = $state(false);
+	let errorMessage = $state('');
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
@@ -24,36 +25,43 @@
 	};
 
 	const googleSignIn = async () => {
-		const data = await authClient.signIn.social({
-			provider: 'google'
-		});
+		loading = true;
+		errorMessage = '';
+		
+		try {
+			const { data, error } = await auth.signInWithProvider('google');
+			if (error) {
+				errorMessage = error.message;
+			}
+		} catch (err) {
+			errorMessage = 'Network error occurred';
+		} finally {
+			loading = false;
+		}
 	};
 
 	const login = async () => {
-		const { data, error } = await authClient.signIn.email(
-			{
-				email, // user email address
-				password, // user password -> min 8 characters by default
-				callbackURL: '/protected/dashboard', // a url to redirect to after the user verifies their email (optional)
-				rememberMe: true // TODO make this optional for the user
-			},
-			{
-				onRequest: (ctx) => {
-					//show loading
-					// TODO add a spinner
-					console.log('Loading');
-				},
-				onSuccess: (ctx) => {
-					//redirect to the dashboard or sign in page
-					console.log('Success');
-					goto('/');
-				},
-				onError: (ctx) => {
-					// display the error message
-					alert(ctx.error.message);
-				}
+		if (!email || !password) {
+			errorMessage = 'Please fill in all fields';
+			return;
+		}
+
+		loading = true;
+		errorMessage = '';
+
+		try {
+			const { data, error } = await auth.signIn(email, password);
+			
+			if (error) {
+				errorMessage = error.message;
+			} else {
+				goto('/protected/dashboard');
 			}
-		);
+		} catch (err) {
+			errorMessage = 'Network error occurred';
+		} finally {
+			loading = false;
+		}
 	};
 </script>
 
@@ -64,19 +72,27 @@
 		</CardHeader>
 
 		<CardContent>
+			{#if errorMessage}
+				<div class="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+					{errorMessage}
+				</div>
+			{/if}
+			
 			<form on:submit={handleSubmit} class="space-y-4">
 				<div class="space-y-2">
 					<Label for="email">Email</Label>
-					<Input id="email" name="email" type="email" bind:value={email} />
+					<Input id="email" name="email" type="email" bind:value={email} disabled={loading} />
 				</div>
 
 				<div class="space-y-2">
 					<Label for="password">Password</Label>
-					<Input id="password" name="password" type="password" bind:value={password} />
+					<Input id="password" name="password" type="password" bind:value={password} disabled={loading} />
 				</div>
 
 				<CardFooter class="px-0 pt-4">
-					<Button type="submit" class="w-full">Sign In</Button>
+					<Button type="submit" class="w-full" disabled={loading}>
+						{loading ? 'Signing In...' : 'Sign In'}
+					</Button>
 				</CardFooter>
 			</form>
 			<div class="mt-6">
@@ -95,6 +111,7 @@
 						variant="outline"
 						class="flex w-full items-center justify-center gap-2"
 						onclick={googleSignIn}
+						disabled={loading}
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 0 24 24" width="18">
 							<path

@@ -1,7 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { authClient } from '$lib/client/auth-client';
-	import { enhance } from '$app/forms';
+	import { auth } from '$lib/stores/auth.svelte.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -14,10 +13,13 @@
 		CardTitle
 	} from '$lib/components/ui/card';
 
-	let name;
-	let email;
-	let password;
-	let confirmedPassword;
+	let name = $state('');
+	let email = $state('');
+	let password = $state('');
+	let confirmedPassword = $state('');
+	let loading = $state(false);
+	let errorMessage = $state('');
+	let successMessage = $state('');
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
@@ -25,30 +27,39 @@
 	};
 
 	const registerUser = async () => {
-		const { data, error } = await authClient.signUp.email(
-			{
-				email, // user email address
-				password, // user password -> min 8 characters by default
-				name, // user display name
-				callbackURL: '/' // a url to redirect to after the user verifies their email (optional)
-			},
-			{
-				onRequest: (ctx) => {
-					//show loading
-					// TODO add a spinner
-					console.log('Loading');
-				},
-				onSuccess: (ctx) => {
-					//redirect to the dashboard or sign in page
-					console.log('Success');
-					goto('/');
-				},
-				onError: (ctx) => {
-					// display the error message
-					alert(ctx.error.message);
-				}
+		if (!email || !password || !confirmedPassword) {
+			errorMessage = 'Please fill in all fields';
+			return;
+		}
+
+		if (password !== confirmedPassword) {
+			errorMessage = 'Passwords do not match';
+			return;
+		}
+
+		if (password.length < 6) {
+			errorMessage = 'Password must be at least 6 characters';
+			return;
+		}
+
+		loading = true;
+		errorMessage = '';
+		successMessage = '';
+
+		try {
+			const { data, error } = await auth.signUp(email, password);
+
+			if (error) {
+				errorMessage = error.message;
+			} else {
+				// Since email confirmation is disabled, redirect to dashboard
+				goto('/protected/dashboard');
 			}
-		);
+		} catch (err) {
+			errorMessage = 'Network error occurred';
+		} finally {
+			loading = false;
+		}
 	};
 </script>
 
@@ -60,20 +71,38 @@
 		</CardHeader>
 
 		<CardContent>
-			<form on:submit={handleSubmit} class="space-y-4">
+			{#if errorMessage}
+				<div class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+					{errorMessage}
+				</div>
+			{/if}
+
+			{#if successMessage}
+				<div class="mb-4 rounded border border-green-200 bg-green-50 p-3 text-sm text-green-600">
+					{successMessage}
+				</div>
+			{/if}
+
+			<form onsubmit={handleSubmit} class="space-y-4">
 				<div class="space-y-2">
-					<Label for="name">Full Name</Label>
-					<Input id="name" name="name" type="text" bind:value={name} />
+					<Label for="name">Full Name (Optional)</Label>
+					<Input id="name" name="name" type="text" bind:value={name} disabled={loading} />
 				</div>
 
 				<div class="space-y-2">
 					<Label for="email">Email</Label>
-					<Input id="email" name="email" type="email" bind:value={email} />
+					<Input id="email" name="email" type="email" bind:value={email} disabled={loading} />
 				</div>
 
 				<div class="space-y-2">
 					<Label for="password">Password</Label>
-					<Input id="password" name="password" type="password" bind:value={password} />
+					<Input
+						id="password"
+						name="password"
+						type="password"
+						bind:value={password}
+						disabled={loading}
+					/>
 				</div>
 
 				<div class="space-y-2">
@@ -83,13 +112,21 @@
 						name="confirmPassword"
 						type="password"
 						bind:value={confirmedPassword}
+						disabled={loading}
 					/>
 				</div>
 
 				<CardFooter class="px-0 pt-4">
-					<Button type="submit" class="w-full">Register</Button>
+					<Button type="submit" class="w-full" disabled={loading}>
+						{loading ? 'Creating Account...' : 'Register'}
+					</Button>
 				</CardFooter>
 			</form>
+
+			<div class="mt-4 text-center text-sm">
+				<span class="text-gray-600">Already have an account?</span>
+				<a href="/sign-in" class="text-blue-600 hover:underline">Sign in</a>
+			</div>
 		</CardContent>
 	</Card>
 </div>

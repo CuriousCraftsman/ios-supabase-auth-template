@@ -1,32 +1,49 @@
 <script>
-	import { authClient } from '$lib/client/auth-client';
+	import { auth } from '$lib/stores/auth.svelte.js';
 	import { goto } from '$app/navigation';
-
-	const session = authClient.useSession();
-
-	console.log('session', $session);
-
-	let { data } = $props();
+	import { onMount } from 'svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
 
 	let mobileMenuOpen = $state(false);
 
 	function toggleMobileMenu() {
 		mobileMenuOpen = !mobileMenuOpen;
 	}
+
+	function closeMobileMenu() {
+		mobileMenuOpen = false;
+	}
+
+	async function handleSignOut() {
+		await auth.signOut();
+		goto('/');
+	}
+
+	// Close mobile menu when clicking outside
+	onMount(() => {
+		function handleClickOutside(event) {
+			if (mobileMenuOpen && !event.target.closest('nav')) {
+				mobileMenuOpen = false;
+			}
+		}
+
+		document.addEventListener('click', handleClickOutside);
+		return () => document.removeEventListener('click', handleClickOutside);
+	});
 </script>
 
-<nav class="border-b border-gray-200 bg-white px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
+<nav class="fixed left-0 right-0 z-50 border-b bg-background px-4 py-2.5 shadow-sm" style="top: env(safe-area-inset-top, 0px);">
 	<div class="flex flex-wrap items-center justify-between">
 		<!-- Brand/Logo - serves as Home link (left) -->
 		<a href="/" class="flex items-center">
-			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Home</span>
+			<span class="self-center whitespace-nowrap text-xl font-semibold text-foreground">Home</span>
 		</a>
 
 		<!-- Mobile menu button -->
 		<button
-			onclick={toggleMobileMenu}
 			type="button"
-			class="ml-3 inline-flex items-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 md:hidden"
+			class="ml-3 inline-flex items-center rounded-lg p-2 text-muted-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring md:hidden"
+			onclick={toggleMobileMenu}
 		>
 			<span class="sr-only">Open main menu</span>
 			<svg
@@ -50,7 +67,7 @@
 				<li>
 					<a
 						href="/protected/dashboard"
-						class="py-2 text-gray-700 hover:text-blue-700 dark:text-gray-400 dark:hover:text-white"
+						class="py-2 text-foreground hover:text-primary"
 						>Dashboard</a
 					>
 				</li>
@@ -59,26 +76,26 @@
 
 		<!-- Right-aligned Auth Links (Desktop) -->
 		<div class="hidden space-x-4 md:flex md:items-center">
-			{#if !$session.data?.user}
+			<ThemeToggle />
+			{#if !auth.isAuthenticated}
 				<a
 					href="/sign-in"
-					class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-700 dark:text-gray-400 dark:hover:text-white"
+					class="px-3 py-2 text-sm font-medium text-foreground hover:text-primary"
 					>Sign In</a
 				>
 				<a
 					href="/register"
-					class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+					class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-ring"
 					>Sign Up</a
 				>
-			{/if}
-
-			{#if $session.data?.user}
+			{:else}
+				<span class="text-sm text-muted-foreground">
+					{auth.user?.email}
+				</span>
 				<button
-					onclick={async () => {
-						await authClient.signOut();
-						goto('/');
-					}}
-					class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-700 dark:text-gray-400 dark:hover:text-white"
+					type="button"
+					onclick={handleSignOut}
+					class="px-3 py-2 text-sm font-medium text-foreground hover:text-primary"
 					>Sign Out</button
 				>
 			{/if}
@@ -87,34 +104,44 @@
 		<!-- Mobile Navigation Menu -->
 		<div class="{mobileMenuOpen ? 'block' : 'hidden'} w-full md:hidden" id="mobile-menu">
 			<ul class="mt-4 flex flex-col space-y-2 font-medium">
-				<li>
-					<a
-						href="/protected/dashboard"
-						class="block border-b border-gray-100 py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-						>Dashboard</a
-					>
+				<li class="flex justify-center py-2">
+					<ThemeToggle />
 				</li>
-				<li>
-					<a
-						href="/signin"
-						class="block border-b border-gray-100 py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-						>Sign In</a
-					>
-				</li>
-				<li>
-					<a
-						href="/register"
-						class="block border-b border-gray-100 py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-						>Sign Up</a
-					>
-				</li>
-				<li>
-					<a
-						href="/signout"
-						class="block py-2 pl-3 pr-4 text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-						>Sign Out</a
-					>
-				</li>
+				{#if !auth.isAuthenticated}
+					<li>
+						<a
+							href="/sign-in"
+							class="block border-b py-2 pl-3 pr-4 text-foreground hover:bg-accent"
+							onclick={closeMobileMenu}
+							>Sign In</a
+						>
+					</li>
+					<li>
+						<a
+							href="/register"
+							class="block border-b py-2 pl-3 pr-4 text-foreground hover:bg-accent"
+							onclick={closeMobileMenu}
+							>Sign Up</a
+						>
+					</li>
+				{:else}
+					<li>
+						<a
+							href="/protected/dashboard"
+							class="block border-b py-2 pl-3 pr-4 text-foreground hover:bg-accent"
+							onclick={closeMobileMenu}
+							>Dashboard</a
+						>
+					</li>
+					<li>
+						<button
+							type="button"
+							class="w-full text-left border-b py-2 pl-3 pr-4 text-foreground hover:bg-accent"
+							onclick={() => { handleSignOut(); closeMobileMenu(); }}
+							>Sign Out</button
+						>
+					</li>
+				{/if}
 			</ul>
 		</div>
 	</div>

@@ -1,5 +1,15 @@
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-const config = { kit: { adapter: adapter() } };
-
-export default config;
+export default {
+    kit: {
+        adapter: adapter({
+            pages: 'build',
+            assets: 'build',
+            fallback: 'index.html', // This is the key change for SPA mode
+            precompress: false,
+            strict: false
+        })
+    },
+    preprocess: vitePreprocess()
+};

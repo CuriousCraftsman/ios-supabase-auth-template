@@ -1,0 +1,93 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+This is a SvelteKit-based mobile application template with Supabase authentication, designed for iOS deployment using Capacitor. The app uses SPA mode with static adapter for mobile compatibility.
+
+## Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Format code
+npm run format
+
+# Lint code
+npm run lint
+
+# Sync SvelteKit (after config changes)
+npm run prepare
+```
+
+## Mobile Development
+
+```bash
+# Build and sync with Capacitor
+npm run build && npx cap sync ios
+
+# Open iOS project in Xcode
+npx cap open ios
+
+# Run on iOS simulator
+npx cap run ios
+
+# Add iOS platform (if needed)
+npx cap add ios
+```
+
+## Architecture
+
+### Authentication System
+- **Authentication methods**: Email/password authentication (Google OAuth code exists but is not functional in mobile)
+- **Client-side authentication**: Uses Supabase Auth with `src/lib/stores/auth.svelte.js` as the main auth store
+- **Session management**: Smart storage adapter in `src/lib/supabase.js` handles native mobile storage vs. web localStorage
+- **Route protection**: Client-side route guards in `src/routes/protected/+layout.svelte` redirect unauthenticated users
+- **Server-side auth**: Currently disabled (commented out in `src/hooks.server.js` and `src/lib/server/security.js`) due to mobile deployment constraints
+
+### State Management
+- **Svelte 5 runes**: Uses `$state()` for reactive state management
+- **Auth store**: Centralized authentication state in `src/lib/stores/auth.svelte.js`
+- **Theme store**: Dark/light mode toggle in `src/lib/stores/theme.svelte.js`
+
+### Mobile-First Design
+- **Capacitor integration**: Native mobile features through Capacitor plugins
+- **Cross-platform storage**: Automatic fallback from native Preferences to localStorage
+- **iOS-specific**: Configured for iOS deployment with proper status bar handling
+- **SPA mode**: Uses `fallback: 'index.html'` in svelte.config.js for mobile compatibility
+
+### UI Components
+- **shadcn/ui**: Component library with Tailwind CSS styling
+- **bits-ui**: Headless UI components for Svelte
+- **Responsive design**: Mobile-first approach with container layouts
+
+## Environment Setup
+
+Required environment variables in `.env`:
+```
+PUBLIC_SUPABASE_URL=your-supabase-url
+PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+## Key File Locations
+
+- **Supabase client**: `src/lib/supabase.js`
+- **Auth store**: `src/lib/stores/auth.svelte.js`
+- **Route protection**: `src/routes/protected/+layout.svelte`
+- **Main layout**: `src/routes/+layout.svelte`
+- **Capacitor config**: `capacitor.config.ts`
+
+## Important Notes
+
+- Server-side functionality is limited due to mobile deployment - prefer client-side solutions
+- OAuth authentication is not functional in mobile builds due to lack of clean deep linking solution in Capacitor
+- Session detection in URLs is disabled (`detectSessionInUrl: false`) for mobile reliability
+- iOS project files are in the `ios/` directory and managed by Capacitor
